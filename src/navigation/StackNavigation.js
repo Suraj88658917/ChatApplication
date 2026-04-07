@@ -1,14 +1,17 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import SplashScreen from "../screens/authScreen/SplashScreen";
+import HomeScreen from "../screens/appScreen/HomeScreen";
+
+const Stack = createNativeStackNavigator();
 
 const StackNavigation = () => {
   return (
-    <View>
-      <Text>StackNavigation</Text>
-    </View>
-  )
-}
+    <Stack.Navigator screenOptions={{headerShown: false }}>
+      <Stack.Screen name="SplashScreen" component={SplashScreen} />
+      <Stack.Screen name="HomeScreen" component={HomeScreen} />
+    </Stack.Navigator>
+  );
+};
 
-export default StackNavigation
-
-const styles = StyleSheet.create({})
+export default StackNavigation;

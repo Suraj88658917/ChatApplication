@@ -1,14 +1,34 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 
-const SplashScreen = () => {
+const SplashScreen = ({ navigation }) => {
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      console.log("run");
+
+      navigation.replace("HomeScreen");
+
+    }, 3000);
+
+    return () => clearTimeout(timer);
+
+  }, []);
+
   return (
-    <View>
-      <Text>SplashScreen</Text>
+    <View style={styles.container}>
+      <Text style={{fontSize:20 , fontFamily:"Poppins-Bold"}}>ChatApplication</Text>
     </View>
   )
 }
 
-export default SplashScreen
+export default SplashScreen;
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#208bf0",
+    justifyContent: "center",
+    alignItems: "center"
+  }
+});
