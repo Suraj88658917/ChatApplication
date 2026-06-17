@@ -1,23 +1,67 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity, TextInput } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Back from "../../assets/image/back.svg";
 import PhoneCall from "../../assets/image/phone-call.svg";
 import Camera from "../../assets/image/camera.svg";
 import Send1 from "../../assets/image/send1.svg";
+import Socket from "../service/Socket";
 
 const HomeScreen = ({ navigation }) => {
   const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+
+
+  useEffect(() => {
+    Socket.initializeSocket();
+
+    
+    Socket.emit("register", "user1");
+
+    Socket.on("receive_message", (msg) => {
+      console.log("message" , msg)
+      const newMessage = {
+        ...msg ,
+        type : "sender"
+      }
+      setMessages(prev => [...prev,newMessage ]);
+    });
+
+    return () => {
+      Socket.removeListener("receive_message");
+    };
+  }, []);
+
+  const handleSend = () => {
+    if (!message.trim()) return;
+
+    const msg = {
+       message,
+      senderId: "user1",
+      receiverId: "user2",
+    }
+
+    Socket.emit("send_message" , 
+     msg
+    );
+
+    // const newMessage = {
+    //   ...msg ,
+    //   type:"recever"
+    // }
+    // setMessages(prev => [...prev,newMessage ]);
+
+    setMessage("");
+  };
+
+  console.log(messages , "message data")
 
   return (
     <View style={styles.container}>
 
       <View style={styles.header}>
-
-      <View>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <Back width={25} height={25} />
         </TouchableOpacity>
-      </View>
 
         <Image
           style={styles.image}
@@ -32,11 +76,42 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.callBtn}>
           <PhoneCall width={20} height={20} />
         </View>
-
       </View>
 
-      <View style={styles.inputContainer}>
+      {/* <View style={{ flex: 1, padding: 10 }}>
+        {messages.map((msg, index) => (
+          <Text key={index} style={{ marginVertical: 5 }}>
+            {msg.senderId}: {msg.message}
+          </Text>
+        ))}
+      </View> */}
 
+      <View style={{ flex: 1, padding: 10 }}>
+  {messages.map((msg, index) => {
+    const isMe = msg.senderId === "user1";
+
+    return (
+      <View
+        key={index}
+        style={{
+          alignSelf: isMe ? "flex-end" : "flex-start",
+          backgroundColor: isMe ? "#149dff" : "#e5e5e5",
+          padding: 10,
+          borderRadius: 10,
+          marginVertical: 5,
+          maxWidth: "70%",
+        }}
+      >
+        <Text style={{ color: isMe ? "#fff" : "#000" }}>
+          {msg.message}
+        </Text>
+      </View>
+    );
+  })}
+</View>
+
+
+      <View style={styles.inputContainer}>
         <TouchableOpacity style={styles.iconBtn}>
           <Camera width={20} height={20} />
         </TouchableOpacity>
@@ -48,10 +123,9 @@ const HomeScreen = ({ navigation }) => {
           style={styles.input}
         />
 
-        <TouchableOpacity style={styles.sendBtn}>
+        <TouchableOpacity onPress={handleSend} style={styles.sendBtn}>
           <Send1 width={25} height={25} />
         </TouchableOpacity>
-
       </View>
 
     </View>
@@ -72,7 +146,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5a40e",
     paddingHorizontal: 10,
     height: 90,
-    paddingTop:20
+    paddingTop: 20
   },
 
   image: {
@@ -105,25 +179,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
- inputContainer: {
-  position: "absolute",
-  bottom: 3,
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#ffffff",
-  width:"100%",
-  height:100
-},
+  inputContainer: {
+    position: "absolute",
+    bottom: 10,
+    left: 10,
+    right: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 25,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    elevation: 5,
+  },
 
   input: {
     flex: 1,
     backgroundColor: "#eeebeb",
-    height: 55,
+    height: 45,
     borderRadius: 25,
     paddingHorizontal: 15,
     marginHorizontal: 8,
-    fontFamily: "Poppins-Regular",
-    
   },
 
   iconBtn: {
